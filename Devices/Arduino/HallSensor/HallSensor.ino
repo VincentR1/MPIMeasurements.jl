@@ -2,6 +2,7 @@
 #define VERSION "1"
 #define POSITION 1
 #define BAUDRATE 9600
+#define Window 1024
 #include <Tlv493d.h>
 
 // Tlv493d Opject
@@ -30,6 +31,7 @@ commandHandler_t cmdHandler[] = {
   {"POS", getPosition},
   {"TEMP", getTemp},
   {"VERSION", getVersion},
+  {"MEAN", getMean},
   {"COMMANDS", getCommands},
   //{"FOO", setFoo}
 };
@@ -37,6 +39,7 @@ commandHandler_t cmdHandler[] = {
 int getCommands(char*) {
   Serial.println("Valid Commands (without quotes):");
   Serial.println("'!DATA*#' ");
+  Serial.println("!MEAN*#'")
   Serial.println("'!POS*#' ");
   Serial.println("'!VERSION*#' ");
   Serial.println("'!COMMANDS*#' ");
@@ -128,7 +131,9 @@ void setup() {
   Tlv493dMagnetic3DSensor.setAccessMode(Tlv493dMagnetic3DSensor.MASTERCONTROLLEDMODE);
   Tlv493dMagnetic3DSensor.disableTemp();
 }
-
+int getMeans(char*) {
+  
+}
 
 int getData(char*) {
   Tlv493dMagnetic3DSensor.updateData();
