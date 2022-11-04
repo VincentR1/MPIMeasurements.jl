@@ -82,6 +82,7 @@ function getXYZValues(gauss::ArduinoGaussMeter)
   data = [parse(Float32,str) for str in data_strings]
   return data
 end
+
 export setSampleSize
 function setSampleSize(gauss::ArduinoGaussMeter, samplesize::Int)
   data_string = sendCommand(gauss.ard, "SAMPLES" * string(samplesize))

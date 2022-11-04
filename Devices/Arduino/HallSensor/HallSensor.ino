@@ -142,23 +142,18 @@ int getData(char*) {
   
   // TODO perform measurement
   
-  int32_t sumX=0,sumY=0,sumZ=0,sumXX=0,sumYY=0,sumZZ=0,x=0,y=0,z=0;
-  float varX=0, varY = 0, varZ=0, meanX =0, meanY =0, meanZ =0;
+  int32_t sumX=0,sumXX=0, x=0;
+  float varX=0, meanX =0;
   for (int i =0 ;i< sample_size ; i++){
     sensor.updateData(); 
     start = millis();
     
     x = sensor.getRawX();
-    y = sensor.getRawY();
-    z = sensor.getRawZ();
+    Serial.print(x);
+    Serial.print(",");
     
     sumX+=x;
-    sumY+=y;
-    sumZ+=z;
-    
     sumXX += x*x;
-    sumYY += y*y;
-    sumZZ += z*z;
 
     end = millis();
     if (end - start < measDelay) {
@@ -168,24 +163,10 @@ int getData(char*) {
   meanX = (float)sumX/sample_size;
   varX = (float) sumXX- (meanX*meanX)*sample_size;
   varX = varX/(sample_size-1);
-  meanY = (float)sumY/sample_size;
-  varY = (float) sumYY- (meanY*meanY)*sample_size;
-  varY = varY/(sample_size-1);
-  meanZ = (float)sumX/sample_size;
-  varZ = (float) sumZZ- (meanZ*meanZ)*sample_size;
-  varZ = varZ/(sample_size-1);
   
   Serial.print(meanX,7);
   Serial.print(",");
-  Serial.print(meanY,7);
-  Serial.print(",");
-  Serial.print(meanZ,7);
-  Serial.print(",");
   Serial.print(varX,7);
-  Serial.print(",");
-  Serial.print(varY,7);
-  Serial.print(",");
-  Serial.print(varZ,7);
   Serial.println("#");
   Serial.flush();
 }
