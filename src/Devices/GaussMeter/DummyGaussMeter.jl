@@ -15,7 +15,7 @@ end
 
 neededDependencies(::DummyGaussMeter) = []
 optionalDependencies(::DummyGaussMeter) = []
-
+getPosition(::DummyGaussMeter) = 1
 Base.close(gauss::DummyGaussMeter) = nothing
 function triggerMeasurment(gauss::DummyGaussMeter) 
   #NOP
