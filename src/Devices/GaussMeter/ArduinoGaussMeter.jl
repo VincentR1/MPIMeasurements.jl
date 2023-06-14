@@ -1,24 +1,7 @@
-export ArduinoGaussMeter, ArduinoGaussMeterParams, ArduinoGaussMeterDirectParams, ArduinoGaussMeterPoolParams, ArduinoGaussMeterDescriptionParams, getRawXYZValues, getXYZValues, triggerMeasurment, receive, receiveMeasurment, setSampleSize, getSampleSize, getTemperature,reset
+export ArduinoGaussMeter, ArduinoGaussMeterParams, ArduinoGaussMeterPoolParams, ArduinoGaussMeterParams, getRawXYZValues, getXYZValues, triggerMeasurment, receive, receiveMeasurment, setSampleSize, getSampleSize, getTemperature,reset
 
 
-abstract type ArduinoGaussMeterParams <: DeviceParams end
-
-
-Base.@kwdef struct ArduinoGaussMeterDirectParams <: ArduinoGaussMeterParams
-  portAddress::String
-  position::Int64 = 1
-  calibration::Matrix{Float64} = Matrix{Float64}(I, (3, 3)) * 0.125
-  rotation::Matrix{Float64} = Matrix{Float64}(I, (3, 3))
-  translation::Matrix{Float64} = Matrix{Float64}(I, (3, 3))
-  biasCalibration = Vector{Float64} = [0.0, 0.0, 0.0]
-  sampleSize::Int
-  @add_serial_device_fields "#"
-  @add_arduino_fields "!" "*"
-end
-ArduinoGaussMeterDirectParams(dict::Dict) = params_from_dict(ArduinoGaussMeterDirectParams, dict)
-
-
-Base.@kwdef struct ArduinoGaussMeterDescriptionParams <: ArduinoGaussMeterParams
+Base.@kwdef struct ArduinoGaussMeterParams <:DeviceParams
   description::String
   positionID::Int
   position::Vector{Float64} = [0.0, 0.0, 0.0]
@@ -32,7 +15,7 @@ Base.@kwdef struct ArduinoGaussMeterDescriptionParams <: ArduinoGaussMeterParams
   @add_arduino_fields "!" "*"
 end
 
-function ArduinoGaussMeterDescriptionParams(dict::Dict)
+function ArduinoGaussMeterParams(dict::Dict)
   if haskey(dict, "translation")
     dict["translation"] = Float64.(reshape(dict["translation"], 3, 3))
   end
@@ -42,7 +25,7 @@ function ArduinoGaussMeterDescriptionParams(dict::Dict)
   if haskey(dict, "calibration")
     dict["calibration"] = Float64.(reshape(dict["calibration"], 3, 3))'
   end
-  params_from_dict(ArduinoGaussMeterDescriptionParams, dict)
+  params_from_dict(ArduinoGaussMeterParams, dict)
 end
 
 
@@ -59,7 +42,7 @@ optionalDependencies(::ArduinoGaussMeter) = [SerialPortPool]
 
 function _init(gauss::ArduinoGaussMeter)
   params = gauss.params
-  sd = initSerialDevice(gauss, params)
+  sd = initSerialDevice(gauss)
   @info "Connection to ArduinoGaussMeter established."
   ard = SimpleArduino(; commandStart=params.commandStart, commandEnd=params.commandEnd, sd=sd)
   gauss.ard = ard
@@ -67,23 +50,16 @@ function _init(gauss::ArduinoGaussMeter)
   setSampleSize(gauss, params.sampleSize)
 end
 
-function initSerialDevice(gauss::ArduinoGaussMeter, params::ArduinoGaussMeterDirectParams)
-  sd = SerialDevice(params.portAddress; serial_device_splatting(params)...)
+function initSerialDevice(gauss::ArduinoGaussMeter)
+  sd = initSerialDevice(gauss, gauss.params.description)
   checkSerialDevice(gauss, sd)
   return sd
 end
 
-function initSerialDevice(gauss::ArduinoGaussMeter, params::ArduinoGaussMeterDescriptionParams)
-  sd = initSerialDevice(gauss, params.description)
-  checkSerialDevice(gauss, sd)
-  return sd
-end
-
-function checkSerialDevice(gauss::ArduinoGaussMeter, sd::SerialDevice)
+function checkSerialDevice(::ArduinoGaussMeter, sd::SerialDevice)
   try
     reply = query(sd, "!VERSION*")
-    """todo fix number"""
-    if !(startswith(reply, "HALLSENS:"))
+    if !(startswith(reply, "HALLSENS:5"))
       close(sd)
       throw(ScannerConfigurationError(string("Connected to wrong Device", reply)))
     end
