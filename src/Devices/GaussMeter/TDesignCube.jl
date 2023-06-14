@@ -25,20 +25,26 @@ function _init(cube::TDesignCube)
         close.(sensors) # TODO @NH Should not close devices here
         throw("missing Sensors")
     end
-    sort!(sensors, by=x -> x.params.positionID)
+    sort!(sensors, by=x -> getPosition(x))
     cube.sensors = sensors
     setSampleSize(cube, sampleSize)
 end
 
 export setSampleSize
 function setSampleSize(cube::TDesignCube, sampleSize::Int)
+    calledSensors = []
     for sensor in cube.sensors
-        returnSampleSize = setSampleSize(sensor, sampleSize)
-        if returnSampleSize != sampleSize
-            throw("sensors coud not be updated")
+        try
+            setSampleSize.(cube.sensors, sampleSize)
+            append!(calledSensors, [sensor])
+        catch
+            (e)
+            setSampleSize.(cube.sensors, cube.sampleSize)
+            Throw("Connection to sensor failed:$(getPosition(s)),Sensor Error: $(e)")
         end
     end
     cube.sampleSize = sampleSize
+    return cube.sampleSize
 end
 
 export getSampleSize
@@ -49,8 +55,15 @@ function getXYZValues(cube::TDesignCube)
     #triggerMeasurment
     triggerMeasurment.(cube.sensors)
     #readmeasurement
+    calledSensors = []
     for (i, sensor) in enumerate(cube.sensors)
-        measurement[:, i] = receiveMeasurment(sensor)
+       try
+            measurement[:, i] = receiveMeasurment(sensor)
+            append!(calledSensors,[sensor])
+        catch e
+            reset.(calledSensors)
+            throw("Problem with sensor: $(i), Error Massage : $(e)")
+       end
     end
     return measurement
 end
