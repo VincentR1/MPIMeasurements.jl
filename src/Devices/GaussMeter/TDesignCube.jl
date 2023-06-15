@@ -25,7 +25,7 @@ function _init(cube::TDesignCube)
         close.(sensors) # TODO @NH Should not close devices here
         throw("missing Sensors")
     end
-    sort!(sensors, by=x -> getPosition(x))
+    sort!(sensors, by=x -> getPositionID(x))
     cube.sensors = sensors
     setSampleSize(cube, sampleSize)
 end
@@ -40,7 +40,7 @@ function setSampleSize(cube::TDesignCube, sampleSize::Int)
         catch
             (e)
             setSampleSize.(cube.sensors, cube.sampleSize)
-            Throw("Connection to sensor failed:$(getPosition(s)),Sensor Error: $(e)")
+            Throw("Connection to sensor failed:$(getPositionID(s)),Sensor Error: $(e)")
         end
     end
     cube.sampleSize = sampleSize
@@ -72,7 +72,6 @@ getT(cube::TDesignCube) = cube.params.T
 getN(cube::TDesignCube) = cube.params.N
 getRadius(cube::TDesignCube) = cube.params.radius
 
-getPositions(cube::TDesignCube) = getPosition.(cube.sensors)
 getTemperatures(cube::TDesignCube) = getTemperature.(cube.sensors)
 
 #starts measument and stores it into a hdf5 file

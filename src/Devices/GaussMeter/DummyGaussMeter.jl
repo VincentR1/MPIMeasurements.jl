@@ -22,7 +22,7 @@ function triggerMeasurment(gauss::DummyGaussMeter)
 end
 receiveMeasurment(gauss::DummyGaussMeter) =getXYZValues(gauss)
 setSampleSize(gauss::DummyGaussMeter, sampleSize) = sampleSize
-getXYZValue(gauss::DummyGaussMeter) = [1.0,u"mT",2.0u"mT",3.0u"mT"]
+getXYZValues(gauss::DummyGaussMeter) = [1.0u"mT",2.0u"mT",3.0u"mT"]
 getTemperature(gauss::DummyGaussMeter) = 20.0u"°C"
 getFrequency(gauss::DummyGaussMeter) = 0.0u"Hz"
 calculateFieldError(gauss::DummyGaussMeter, magneticField::Vector{<:Unitful.BField}) = 1.0u"mT"

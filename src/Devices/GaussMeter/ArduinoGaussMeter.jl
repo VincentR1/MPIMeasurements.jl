@@ -214,4 +214,6 @@ function getTemperature(gauss::ArduinoGaussMeter)
 end
 
 getPosition(gauss::ArduinoGaussMeter) = gauss.params.position
+getPositionID(gauss::ArduinoGaussMeter) = gauss.params.positionID
+
 close(gauss::ArduinoGaussMeter) = close(gauss.ard)
