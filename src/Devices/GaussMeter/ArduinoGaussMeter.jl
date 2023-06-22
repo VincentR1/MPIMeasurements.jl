@@ -8,7 +8,7 @@ Base.@kwdef struct ArduinoGaussMeterParams <:DeviceParams
   calibration::Matrix{Float64} = Matrix{Float64}(I, (3, 3)) * 0.125
   rotation::Matrix{Float64} = Matrix{Float64}(I, (3, 3))
   translation::Matrix{Float64} = Matrix{Float64}(I, (3, 3))
-  biasCalibration::Vector{Float64} = [0.0, 0.0, 0.0]
+  bias::Vector{Float64} = [0.0, 0.0, 0.0]
   sampleSize::Int
 
   @add_serial_device_fields "#"
@@ -17,10 +17,10 @@ end
 
 function ArduinoGaussMeterParams(dict::Dict)
   if haskey(dict, "translation")
-    dict["translation"] = Float64.(reshape(dict["translation"], 3, 3))
+    dict["translation"] = Float64.(reshape(dict["translation"], 3, 3))'
   end
   if haskey(dict, "rotation")
-    dict["rotation"] = Float64.(reshape(dict["rotation"], 3, 3))
+    dict["rotation"] = Float64.(reshape(dict["rotation"], 3, 3))'
   end
   if haskey(dict, "calibration")
     dict["calibration"] = Float64.(reshape(dict["calibration"], 3, 3))'
@@ -80,7 +80,7 @@ end
 function getRawXYZValues(gauss::ArduinoGaussMeter)
 
   triggerMeasurment(gauss)
-  data = receive(gauss)
+  data = receiveRawMeasurment(gauss)
   return data
 end
 
@@ -120,12 +120,12 @@ end
     [x_raw_mean,y_raw_mean,z_raw_mean, x_raw_var,y_raw_var,z_raw_var]
 """
 
-function receiveRaWMeasurment(gauss::ArduinoGaussMeter)
+function receiveRawMeasurment(gauss::ArduinoGaussMeter)
   if !gauss.measurementTriggered
     throw("triggerMeasurment(gauss::ArduinoGaussMeter) has to be called first")
   else
     temp = get_timeout(gauss.ard)
-    timeout_ms = max(1000, floor(Int, gauss.sampleSize * gauss.measdelay * 4) + 1)
+    timeout_ms = max(5000, floor(Int, gauss.sampleSize * gauss.measdelay)+2000)
     (timeout_ms)
     set_timeout(gauss.ard, timeout_ms)
     try
@@ -172,7 +172,7 @@ Varianz can't be calibrated
 function applyCalibration(gauss::ArduinoGaussMeter, data::Vector{Float64})
   means = data[1:3]
   # TODO Sanity checks on data, does it have the expected size
-  calibrated_means = gauss.params.rotation * ((gauss.params.calibration * means) + gauss.params.biasCalibration) .* 1.0u"mT"
+  calibrated_means = gauss.params.rotation * ((gauss.params.calibration * means) + gauss.params.bias) .* 1.0u"mT"
   return calibrated_means
 end
 

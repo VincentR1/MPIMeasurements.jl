@@ -1,4 +1,4 @@
-export TDesignCubeParams, TDesignCube, setSampleSize, getSampleSize, getT, getN, getRadius, getPositions, getTemperature, measurment, reset
+export TDesignCubeParams, TDesignCube, setSampleSize, getSampleSize, getT, getN, getRadius, getPositions, getTemperature, resetCube, storeMeasurment
 
 Base.@kwdef struct TDesignCubeParams <: DeviceParams
     T::Int64
@@ -57,13 +57,13 @@ function getXYZValues(cube::TDesignCube)
     #readmeasurement
     calledSensors = []
     for (i, sensor) in enumerate(cube.sensors)
-       try
+        try
             measurement[:, i] = receiveMeasurment(sensor)
-            append!(calledSensors,[sensor])
+            append!(calledSensors, [sensor])
         catch e
             reset.(calledSensors)
             throw("Problem with sensor: $(i), Error Massage : $(e)")
-       end
+        end
     end
     return measurement
 end
@@ -75,25 +75,29 @@ getRadius(cube::TDesignCube) = cube.params.radius
 getTemperatures(cube::TDesignCube) = getTemperature.(cube.sensors)
 
 #starts measument and stores it into a hdf5 file
-function measurment(cube, filename, center_position=[0, 0, 0], sampleSize=1000)
-    setSampleSize(cube, 1000)
+function storeMeasurment(cube::TDesignCube, filename::AbstractString, center_position=[0.0, 0.0, 0.0])
+
     data = getXYZValues(cube)
-    println(data)
+    field = ustrip.(u"T", data)
+    radius = getRadius(cube)
+    N = getN(cube)
+    t = getT(cube)
+    center = center_position
+    correction = zeros(Float64, 3, 3)
     h5open(filename, "w") do file
-        println("hear")
-        write(file, "/fields", ustrip.(u"T", data))# measured field (size: 3 x #points x #patches)
-        println("hear2")
-        println(cube.params.radius)
-        write(file, "/positions/tDesign/radius", ustrip(u"m", cube.params.radius))# radius of the measured ball
-        write(file, "/positions/tDesign/N", cube.params.N)# number of points of the t-design
-        write(file, "/positions/tDesign/t", cube.params.T)# t of the t-design
-        write(file, "/positions/tDesign/center", center_position)# center of the measured ball
-        write(file, "/sensor/correctionTranslation", zeros(3, 3))
+        write(file, "/fields", field)# measured field (size: 3 x #points x #patches)
+        write(file, "/positions/tDesign/radius", ustrip(u"m", radius))# radius of the measured ball
+        write(file, "/positions/tDesign/N", N)# number of points of the t-design
+        write(file, "/positions/tDesign/t", t)# t of the t-design
+        write(file, "/positions/tDesign/center", center)# center of the measured ball
+        write(file, "/sensor/correctionTranslation", correction)# center of the measured ball
+
+
     end
-    return measurement
+    return data
 end
 
-reset(cube::TDesignCube) = reset.(cube.sensors)
+resetCube(cube::TDesignCube) = reset.(cube.sensors)
 function close(cube::TDesignCube)
     #NOP
 end

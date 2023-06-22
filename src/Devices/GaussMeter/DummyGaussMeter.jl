@@ -15,11 +15,13 @@ end
 
 neededDependencies(::DummyGaussMeter) = []
 optionalDependencies(::DummyGaussMeter) = []
-getPosition(::DummyGaussMeter) = 1
+getPosition(::DummyGaussMeter) = [1.,2.,3.]
 Base.close(gauss::DummyGaussMeter) = nothing
 function triggerMeasurment(gauss::DummyGaussMeter) 
   #NOP
 end
+getPositionID(gauss::DummyGaussMeter) = 1
+
 receiveMeasurment(gauss::DummyGaussMeter) =getXYZValues(gauss)
 setSampleSize(gauss::DummyGaussMeter, sampleSize) = sampleSize
 getXYZValues(gauss::DummyGaussMeter) = [1.0u"mT",2.0u"mT",3.0u"mT"]
