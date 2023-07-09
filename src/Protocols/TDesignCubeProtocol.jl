@@ -1,12 +1,12 @@
 
-export TDesignCubeProtocolParams, TDesignCubeProtocol
+export TDesignSensorArrayProtocolParams, TDesignSensorArrayProtocol
 
-Base.@kwdef mutable struct TDesignCubeProtocolParams <: ProtocolParams
+Base.@kwdef mutable struct TDesignSensorArrayProtocolParams <: ProtocolParams
   sequence::Union{Sequence,Nothing} = nothing
   center::ScannerCoords = ScannerCoords([[0.0u"mm", 0.0u"mm", 0.0u"mm"]])
   samplesSize::Union{Nothing,Int64} = nothing # Optional overwrite
 end
-function TDesignCubeProtocolParams(dict::Dict, scanner::MPIScanner)
+function TDesignSensorArrayProtocolParams(dict::Dict, scanner::MPIScanner)
   sequence = nothing
   if haskey(dict, "sequence")
     sequence = Sequence(scanner, dict["sequence"])
@@ -14,27 +14,27 @@ function TDesignCubeProtocolParams(dict::Dict, scanner::MPIScanner)
     delete!(dict, "sequence")
   end
 
-  params = params_from_dict(TDesignCubeProtocolParams, dict)
+  params = params_from_dict(TDesignSensorArrayProtocolParams, dict)
   params.sequence = sequence
   return params
 
 end
 
-Base.@kwdef mutable struct TDesignCubeProtocol <: Protocol
-  @add_protocol_fields TDesignCubeProtocolParams
+Base.@kwdef mutable struct TDesignSensorArrayProtocol <: Protocol
+  @add_protocol_fields TDesignSensorArrayProtocolParams
   finishAcknowledged::Bool = false
   measurement::Union{Matrix{Float64},Nothing} = nothing
   tDesign::Union{SphericalTDesign,Nothing} = nothing
 end
 
-requiredDevices(protocol::TDesignCubeProtocol) = [TDesignCube, AbstractDAQ]
+requiredDevices(protocol::TDesignSensorArrayProtocol) = [TDesignSensorArray, AbstractDAQ]
 
-function _init(protocol::TDesignCubeProtocol)
+function _init(protocol::TDesignSensorArrayProtocol)
   if isnothing(protocol.params.sequence)
     throw(IllegalStateException("Protocol requires a sequence"))
   end
-  cube = getDevice(protocol.scanner, TDesignCube)
-  # TODO get T, N, radius from TDesignCube
+  cube = getDevice(protocol.scanner, TDesignSensorArray)
+  # TODO get T, N, radius from TDesignSensorArray
   N = getN(cube)
   T = getT(cube)
   radius = getRadius(cube)
@@ -43,12 +43,12 @@ function _init(protocol::TDesignCubeProtocol)
 end
 
 
-function enterExecute(protocol::TDesignCubeProtocol)
+function enterExecute(protocol::TDesignSensorArrayProtocol)
   protocol.finishAcknowledged = false
 end
 
-function _execute(protocol::TDesignCubeProtocol)
-  @debug "TDesignCube protocol started"
+function _execute(protocol::TDesignSensorArrayProtocol)
+  @debug "TDesignSensorArray protocol started"
 
   performMeasurement(protocol)
 
@@ -66,8 +66,8 @@ function _execute(protocol::TDesignCubeProtocol)
   @debug "Protocol channel closed after execution."
 end
 
-function performMeasurement(protocol::TDesignCubeProtocol)
-  cube = getDevice(scanner(protocol), TDesignCube)
+function performMeasurement(protocol::TDesignSensorArrayProtocol)
+  cube = getDevice(scanner(protocol), TDesignSensorArray)
   producer = @tspawnat protocol.scanner.generalParams.producerThreadID measurement(protocol)
   while !istaskdone(producer)
     handleEvents(protocol)
@@ -87,7 +87,7 @@ function performMeasurement(protocol::TDesignCubeProtocol)
   end
 end
 
-function startMeasurement(protocol::TDesignCubeProtocol)
+function startMeasurement(protocol::TDesignSensorArrayProtocol)
   daq = getDAQ(protocol.scanner)
   su = getSurveillanceUnit(protocol.scanner)
   tempControl = getTemperatureController(protocol.scanner)
@@ -115,7 +115,7 @@ function startMeasurement(protocol::TDesignCubeProtocol)
   end
 end
 
-function stopMeasurement(protocol::TDesignCubeProtocol)
+function stopMeasurement(protocol::TDesignSensorArrayProtocol)
   daq = getDAQ(protocol.scanner)
   su = getSurveillanceUnit(protocol.scanner)
   tempControl = getTemperatureController(protocol.scanner)
@@ -139,10 +139,10 @@ function stopMeasurement(protocol::TDesignCubeProtocol)
   end
 end
 
-function measurement(protocol::TDesignCubeProtocol)
+function measurement(protocol::TDesignSensorArrayProtocol)
   daq = getDAQ(protocol.scanner)
   startMeasurement(protocol)
-  cube = getDevice(scanner(protocol), TDesignCube)
+  cube = getDevice(scanner(protocol), TDesignSensorArray)
   if sample_size
     setSampleSize(cube)
   end
@@ -157,13 +157,13 @@ function measurement(protocol::TDesignCubeProtocol)
   protocol.measurement = ustrip.(u"T", field)
 end
 
-handleEvent(protocol::TDesignCubeProtocol, event::FinishedAckEvent) = protocol.finishAcknowledged = true
+handleEvent(protocol::TDesignSensorArrayProtocol, event::FinishedAckEvent) = protocol.finishAcknowledged = true
 
-function handleEvent(protocol::TDesignCubeProtocol, event::FileStorageRequestEvent)
+function handleEvent(protocol::TDesignSensorArrayProtocol, event::FileStorageRequestEvent)
   filename = event.filename
   h5open(filename, "w") do file
     write(file, "/fields", protocol.measurement) # measured field (size: 3 x #points x #patches)
-    # TODO get T, N, radius from TDesignCube
+    # TODO get T, N, radius from TDesignSensorArray
     write(file, "/positions/tDesign/radius", ustrip(u"m", radius))# radius of the measured ball
     write(file, "/positions/tDesign/N", N)# number of points of the t-design
     write(file, "/positions/tDesign/t", T)# t of the t-design
@@ -173,6 +173,6 @@ function handleEvent(protocol::TDesignCubeProtocol, event::FileStorageRequestEve
   put!(protocol.biChannel, StorageSuccessEvent(filename))
 end
 
-function cleanup(protocol::TDesignCubeProtocol)
+function cleanup(protocol::TDesignSensorArrayProtocol)
   # NOP
 end

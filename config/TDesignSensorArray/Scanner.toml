@@ -2,7 +2,7 @@
 boreSize = "70mm"
 facility = "Institute for Biomedical Imaging"
 manufacturer = "IBI"
-name = "CalibCube"
+name = "TDesignSensorArray"
 topology = "FFP"
 gradient = "42T/m"
 datasetStore = "/home/v/Dokumente/BA/datastore"
@@ -41,14 +41,14 @@ initializationOrder = [
   "sensor24",
   "sensor25",
   "sensor26",
-  "cube",
+  "tdsa",
 ]
 
 [Devices.ard_pool]
 deviceType = "SerialPortPool"
 blacklist = []
 
-[Devices.cube]
+[Devices.tdsa]
 dependencies = [
   "sensor1",
   "sensor2",
@@ -77,7 +77,7 @@ dependencies = [
   "sensor25",
   "sensor26",
 ]
-deviceType = "TDesignCube"
+deviceType = "TDesignSensorArray"
 T = 6
 N = 26
 radius = "45.00mm"

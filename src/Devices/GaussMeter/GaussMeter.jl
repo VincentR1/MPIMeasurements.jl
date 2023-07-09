@@ -9,8 +9,8 @@ getGaussMeters(scanner::MPIScanner) = getDevices(scanner, GaussMeter)
 export getGaussMeter
 getGaussMeter(scanner::MPIScanner) = getDevice(scanner, GaussMeter)
 
-export getCube
-getCube(scanner::MPIScanner) = getDevice(scanner,TDesignCube)
+export getTDSA
+getCube(scanner::MPIScanner) = getDevice(scanner,TDesignSensorArray)
 
 
 export getTemperature
@@ -40,4 +40,4 @@ include("DummyGaussMeter.jl")
 include("SimulatedGaussMeter.jl")
 include("LakeShore.jl")
 include("ArduinoGaussMeter.jl")
-include("TDesignCube.jl")
+include("TDesignSensorArray.jl")

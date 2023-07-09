@@ -1,5 +1,5 @@
 name = "Du"
-type = "TDesignCubeProtocol"
+type = "TDesignSensorArrayProtocol"
 description = "protocol for measuring fields with the cube."
 targetScanner = "CalibCube"
 sequence = "DummySequence"
