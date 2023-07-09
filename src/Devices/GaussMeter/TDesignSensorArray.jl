@@ -6,7 +6,7 @@ Base.@kwdef struct TDesignSensorArrayParams <: DeviceParams
     radius::typeof(1.0u"mm") = 0.0u"mm"
     sampleSize::Int64 = 100
 end
-TDesignSensorArrayParams(dict::Dict) = params_from_dict(TDesignSensorArray, dict)
+TDesignSensorArrayParams(dict::Dict) = params_from_dict(TDesignSensorArrayParams, dict)
 
 
 Base.@kwdef mutable struct TDesignSensorArray <: Device

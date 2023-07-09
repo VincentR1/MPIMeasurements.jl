@@ -41,14 +41,14 @@ initializationOrder = [
   "sensor24",
   "sensor25",
   "sensor26",
-  "cube",
+  "tdsa",
 ]
 
 [Devices.ard_pool]
 deviceType = "SerialPortPool"
 blacklist = []
 
-[Devices.cube]
+[Devices.tdsa]
 dependencies = [
   "sensor1",
   "sensor2",

@@ -33,11 +33,11 @@ function _init(protocol::TDesignSensorArrayProtocol)
   if isnothing(protocol.params.sequence)
     throw(IllegalStateException("Protocol requires a sequence"))
   end
-  cube = getDevice(protocol.scanner, TDesignSensorArray)
+  tdsa = getDevice(protocol.scanner, TDesignSensorArray)
   # TODO get T, N, radius from TDesignSensorArray
-  N = getN(cube)
-  T = getT(cube)
-  radius = getRadius(cube)
+  N = getN(tdsa)
+  T = getT(tdsa)
+  radius = getRadius(tdsa)
   protocol.tDesign = loadTDesign(T, N, radius, protocol.params.center.data)
   protocol.measurement = zeros(Float64, 3, length(protocol.tDesign))
 end
@@ -67,7 +67,7 @@ function _execute(protocol::TDesignSensorArrayProtocol)
 end
 
 function performMeasurement(protocol::TDesignSensorArrayProtocol)
-  cube = getDevice(scanner(protocol), TDesignSensorArray)
+  tdsa = getDevice(scanner(protocol), TDesignSensorArray)
   producer = @tspawnat protocol.scanner.generalParams.producerThreadID measurement(protocol)
   while !istaskdone(producer)
     handleEvents(protocol)
@@ -142,11 +142,11 @@ end
 function measurement(protocol::TDesignSensorArrayProtocol)
   daq = getDAQ(protocol.scanner)
   startMeasurement(protocol)
-  cube = getDevice(scanner(protocol), TDesignSensorArray)
+  tdsa = getDevice(scanner(protocol), TDesignSensorArray)
   if sample_size
-    setSampleSize(cube)
+    setSampleSize(tdsa)
   end
-  field = getXYZValues(protocol, cube)
+  field = getXYZValues(protocol, tdsa)
   timing = getTiming(daq)
   current = currentWP(daq.rpc)
   if current > timing.down
