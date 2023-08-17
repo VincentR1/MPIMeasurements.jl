@@ -10,7 +10,7 @@ export getGaussMeter
 getGaussMeter(scanner::MPIScanner) = getDevice(scanner, GaussMeter)
 
 export getTDSA
-getCube(scanner::MPIScanner) = getDevice(scanner,TDesignSensorArray)
+getTDSA(scanner::MPIScanner) = getDevice(scanner,TDesignSensorArray)
 
 
 export getTemperature

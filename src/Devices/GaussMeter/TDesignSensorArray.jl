@@ -75,7 +75,7 @@ getRadius(tdsa::TDesignSensorArray) = tdsa.params.radius
 getTemperatures(tdsa::TDesignSensorArray) = getTemperature.(tdsa.sensors)
 
 #starts measument and stores it into a hdf5 file
-function storeMeasurment(tdsa::TDesignSensorArray, filename::AbstractString, center_position=[0.0, 0.0, 0.0])
+function storeMeasurement(tdsa::TDesignSensorArray, filename::AbstractString, center_position=[0.0, 0.0, 0.0])
 
     data = getXYZValues(tdsa)
     field = ustrip.(u"T", data)
